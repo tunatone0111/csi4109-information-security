@@ -1,0 +1,6 @@
+**/target/
+**/venv/
+**/dist/
+**/build/
+**/__pycache__/
+rust-session
