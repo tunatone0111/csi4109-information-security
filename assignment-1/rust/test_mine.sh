@@ -70,7 +70,7 @@ TURN KEY david
 WHO'S INSIDE?
 LEAVE HOUSE bob
 WHO'S INSIDE?
-// invalide leave house
+// invalid leave house
 LEAVE HOUSE carol
 LEAVE HOUSE carol
 LEAVE HOUSE bob
