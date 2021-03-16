@@ -1,7 +1,1 @@
-**/target/
-**/venv/
-**/dist/
-**/build/
-**/__pycache__/
-**/*.sh
 rust-session
