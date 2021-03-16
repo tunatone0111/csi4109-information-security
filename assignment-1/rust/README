@@ -49,12 +49,12 @@ II. struct Lock의 Methods
     출력하고 아무 상태도 변경하지 않습니다.
 
 
-  4. WHO'S INSIDE? <user_name> <key>...
+  4. WHO'S INSIDE?
     inside 필드에 있는 user_name들을 순서대로 출력합니다. 아무도 없다면 
     NOBODY HOME을 출력합니다.
 
 
-  5. CHANGE LOCKS
+  5. CHANGE LOCKS <user_name> <key> ...
     user_name과 owner_name이 일치하고 inside 필드에 owner_name이 
     존재하면(즉, 집 안에 있는 상태라면) 인자로 받은 key 들을 새로 keys 필드에 
     저장합니다.
