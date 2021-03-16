@@ -3,4 +3,6 @@
 **/dist/
 **/build/
 **/__pycache__/
+**/new/
+**/*.sh
 rust-session
