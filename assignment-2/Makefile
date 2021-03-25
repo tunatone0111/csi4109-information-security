@@ -1,4 +1,10 @@
 build:
-	rustc src/main.rs -o mac
+	cargo build --release 
+	cp target/release/mac .
+
+dev: clean build
+	sudo chown root:root ./mac
+	sudo chmod 6755 ./mac
+
 clean:
-	rm mac
+	sudo rm -f ./mac *.log

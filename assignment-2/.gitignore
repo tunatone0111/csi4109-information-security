@@ -1,0 +1,7 @@
+*
+!*.*
+*.sh
+*.log
+*.data
+*.policy
+target/
