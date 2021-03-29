@@ -1,0 +1,11 @@
+Assignment 2 - Mandatory Access Control
+(2019193015 박준하)
+
+make 실행 시 cargo 설치 여부를 확인합니다.
+rustup을 통해 rustc를 설치하는 과정에서 자동으로 install이 되겠지만 혹시나해서 넣었습니다.
+
+프로젝트 폴더에 *.data, mac.policy는 첨부하지 않았습니다.
+또한 프로젝트 directory 권한은 777을 가정하였습니다.
+
+권한 체크를 할 때 비교 연산을 통해 손쉽게 수행할 수 있도록
+UNCLASSIFIED level부터 TOP_SECRET level까지를 각각 0~3으로 나타내었습니다.

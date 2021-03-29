@@ -1,7 +1,9 @@
 *
 !*.*
+*.zip
 *.sh
 *.log
 *.data
 *.policy
 target/
+!README
