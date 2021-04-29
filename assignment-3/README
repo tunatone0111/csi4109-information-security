@@ -1,0 +1,10 @@
+Assignment 3 - Cryptography In Practice
+(2019193015 박준하)
+
+1. not_balid_after field가 expiration date를 나타냅니다.
+2. not_valid_after - not_valid_before을 통해 validity_period를 구할 수 있었습니다.
+3. public_key가 RSAPublicKey의 instance인지 확인하는 것을 통해 해당 certification이 
+   RSA public key를 associated public key로 갖는지 확인할 수 있었습니다.
+4. 3에 해당한다면, public_key.key_size를 통해 key의 size를 구할 수 있었습니다.
+
+최대, 최솟값을 구하는 과정에는 numpy의 method를 사용했습니다.
