@@ -1,0 +1,40 @@
+Assignment 5 - Spawn A Shell
+(2019193015 박준하)
+
+
+0. Warm up
+
+rdi 레지스터에 "/bin//sh"로 가는 주소값을 대입하고 execve를 call하는 부분으로 return하기 위해
+패딩 후 0x00401150을 넣어주었습니다.
+
+
+1. Return-Oriented Programming
+
+ROPgadget에서 생성해주는 ropchain 대신 코드 내에 존재하는 ropgadget들을 적절히 활용하고자 하였습니다.
+Enter_password에서 입력받는 포인터의 값을 변조하여 스택에 덮어쓰기 위해 id값으로 8을 입력하였습니다.
+
+/bin//bash로 가는 주소값을 스택에 직접 적고 그 앞에 pop rdi ; ret 코드를 통해 rdi에 "/bin//bash"가 있는
+주소값인 0x402004를 대입하였습니다.
+
+rax를 59로 만들고, syscall을 하였습니다.
+
+
+2. Bypassing SafeStack
+
+rbx를 1씩 증가시켜가며 rcx(=[fs:[r14] + rbx*8 - 0x400])을 반복적으로 호출하는 부분을 찾았습니다.
+fs:[r14] - 0x400 부터 원하는 함수 주소값을 입력해주면 exploit할 수 있을 것이라 판단하였습니다.
+이를 위해서는 id에 역시 8을 입력해주었고, 그 위로 원하는 함수주소값을 쌓았습니다.
+루프를 돌며 서로 대입되는 r12, rdi, rsi, rax 간의 연관성을 고려해서 함수주소값을 구성하였습니다.
+
+
+3. Bypassing Control-Flow Integrity
+
+구성은 2번과 거의 같습니다. 그러나 함수 주소가 다른 값보다 뒤에 있는지 확인하는 부분이 추가되었습니다. 
+그 부분을 고려하여 함수들을 구성하였습니다.
+
+
+4. Bypassing ASLR 
+
+ASLR의 offset을 구하기 위해 프로그램을 실행하자마자 출력되는 값을 보았습니다.
+offset은 addr1(vuln_leak의 실제 주소값) - fixed_addr(vuln_leak의 ELF 상에서의 주소값) 으로 구하였고,
+2, 3과 같은 방법으로 payload를 구성하였지만 각각의 값에 offset만큼을 더해주었습니다.
