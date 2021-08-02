@@ -1,35 +1,20 @@
-extern crate clap;
-use clap::{App, Arg, SubCommand};
+mod parser;
+mod signtools;
+use signtools::{sign, verify};
 
 fn main() {
-    let args = vec![
-        Arg::with_name("executable")
-            .short("e")
-            .required(true)
-            .takes_value(true),
-        Arg::with_name("key")
-            .short("k")
-            .required(true)
-            .takes_value(true),
-    ];
+    let matches = parser::get_parser().get_matches();
 
-    let matches = App::new("Signtool")
-        .version("1.0")
-        .subcommand(SubCommand::with_name("sign").args(&args))
-        .subcommand(SubCommand::with_name("verify").args(&args))
-        .get_matches();
-
-    if let Some(matches) = matches.subcommand_matches("sign") {
-        let executable = matches.value_of("executable").unwrap();
-        let key = matches.value_of("key").unwrap();
-
-        println!("executable: {}, key: {}", executable, key);
+    if let Some(args) = matches.subcommand_matches("sign") {
+        let executable_path = args.value_of("executable").unwrap();
+        let key_path = args.value_of("key").unwrap();
+        let out_dir = args.value_of("outdir").unwrap();
+        println!("{}", sign(executable_path, key_path, out_dir));
     }
 
-    if let Some(matches) = matches.subcommand_matches("verify") {
-        let executable = matches.value_of("executable").unwrap();
-        let key = matches.value_of("key").unwrap();
-
-        println!("executable: {}, key: {}", executable, key);
+    if let Some(args) = matches.subcommand_matches("verify") {
+        let executable_path = args.value_of("executable").unwrap();
+        let key_path = args.value_of("key").unwrap();
+        println!("{}", verify(executable_path, key_path));
     }
 }

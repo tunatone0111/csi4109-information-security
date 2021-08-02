@@ -1,4 +1,86 @@
-cargo install cargo-edit failed
+Assignment 4 - Signtool
+(2019193015 박준하)
 
-sudo apt install libssl-dev
-sudo apt install pkg-config
+Signing Executable Sections.
+
+Rust의 openssl module을 사용하였습니다. 이 라이브러리에는 sign 모듈이 있어서 Signer, Verifier를
+손쉽게 적용할 수 있었습니다.
+Executable section들을 sign하기에는 길이가 너무 길어서 Q&A에도 올라왔듯이 해쉬를 해줘야 했습니다.
+SHA256알고리즘을 통해 update()하면서 signature를 만들어 나가고 verifier도 똑같은 방식으로 적용했습니다.
+
+.signature section을 추가할 때에는 제대로 구현되어있는 라이브러리도 없어 objcopy command를 이용해서
+진행하였습니다.
+
+
+Bypassing Code Integrity
+
+첫 번째 시도
+
+objdump -d licensechk-signed를 통해 dissassembly하고 난 뒤 
+.text section의 do_license_check 함수 파트를 찾았습니다.
+
+00000000000011a9 <do_license_check>:
+    11a9:	f3 0f 1e fa          	endbr64 
+    11ad:	55                   	push   %rbp
+    11ae:	48 89 e5             	mov    %rsp,%rbp
+    11b1:	48 83 ec 10          	sub    $0x10,%rsp
+    11b5:	48 89 7d f8          	mov    %rdi,-0x8(%rbp)
+    11b9:	48 89 75 f0          	mov    %rsi,-0x10(%rbp)
+    11bd:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+    11c1:	48 89 c6             	mov    %rax,%rsi
+    11c4:	48 8d 3d 39 0e 00 00 	lea    0xe39(%rip),%rdi
+    11cb:	e8 d0 fe ff ff       	callq  10a0 <strcmp@plt>
+    11d0:	85 c0                	test   %eax,%eax
+    11d2:	74 07                	je     11db <do_license_check+0x32>
+    11d4:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+    11d9:	eb 05                	jmp    11e0 <do_license_check+0x37>
+    11db:	b8 00 00 00 00       	mov    $0x0,%eax
+    11e0:	c9                   	leaveq 
+    11e1:	c3                   	retq   
+
+그리고 assignment에 첨부된 코드를 보았을 때 이 함수가 False(0)을 return해야
+VALID가 된다는 것을 알았습니다.
+따라서 이 함수가 0을 return하도록 해야 했습니다.
+
+Vscode의 Hex editor extension을 설치해 licensechk-signed 바이너리를 수정하였습니다.
+11ad, 11ae, 11e0은 스택을 사용하기 위해 caller의 stackframe address를 저장하는 부분인데,
+이 부분도 필요가 없다고 생각하여
+endbr64
+mov $0x0,%eax
+retq
+로 수정하였고
+
+수정한 코드의 총 크기는 11ad부터 시작하여 6Byte 입니다.
+
+
+두 번째 시도
+
+그러나 Assignment에서 제시한 조건에 부합하지 않았습니다. executable section들을 sign하는 것인데
+첫 번째 시도에서는 .text 섹션을 수정하였으므로 verify에 성공하지 못합니다.
+따라서 다른 방법을 찾아야 했습니다.
+과제 설명란에 do_nothing()이 눈에 들어왔습니다. check_license 함수 포인터의 값을 do_nothing으로
+수정해 놓으면 되겠다고 생각했습니다.
+
+.data section을 dump에서 찾지 못해 헤매던 중 dynamic relocation records를 출력해 보았고,
+.rela.dyn section이 05d0부터 시작된다는 것을 알게 되었습니다.
+
+DYNAMIC RELOCATION RECORDS
+OFFSET           TYPE              VALUE
+0000000000003da0 R_X86_64_RELATIVE  *ABS*+0x00000000000011a0
+0000000000003da8 R_X86_64_RELATIVE  *ABS*+0x0000000000001160
+0000000000004008 R_X86_64_RELATIVE  *ABS*+0x0000000000004008
+0000000000004010 R_X86_64_RELATIVE  *ABS*+0x00000000000011a9
+0000000000003fd8 R_X86_64_GLOB_DAT  _ITM_deregisterTMCloneTable
+0000000000003fe0 R_X86_64_GLOB_DAT  __libc_start_main@GLIBC_2.2.5
+0000000000003fe8 R_X86_64_GLOB_DAT  __gmon_start__
+0000000000003ff0 R_X86_64_GLOB_DAT  _ITM_registerTMCloneTable
+0000000000003ff8 R_X86_64_GLOB_DAT  __cxa_finalize@GLIBC_2.2.5
+0000000000003fb8 R_X86_64_JUMP_SLOT  puts@GLIBC_2.2.5
+0000000000003fc0 R_X86_64_JUMP_SLOT  __stack_chk_fail@GLIBC_2.4
+0000000000003fc8 R_X86_64_JUMP_SLOT  strcmp@GLIBC_2.2.5
+0000000000003fd0 R_X86_64_JUMP_SLOT  __isoc99_scanf@GLIBC_2.7
+
+여기서 check_license에 해당하는 부분인 4010부분의 Value 11a9를 do_nothing의 주소인 11e2로 바꾸면
+되겠다고 판단했습니다.
+
+그래서 0619에 있는 a9만 e2로 바꾸어 총 1바이트 수정하였습니다. 비트로 따진다면 4비트입니다.
